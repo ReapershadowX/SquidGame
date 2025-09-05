@@ -1,0 +1,4 @@
+repository "Squid Game Project/Squid Game Project@16768302977616@cloud"
+  path "/"
+    br "/main"
+    co "/main"
