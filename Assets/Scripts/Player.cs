@@ -13,20 +13,40 @@ public class Player : MonoBehaviour
 
     Animator playerAnimator;
 
+    AudioSource audioSource;
+
     [SerializeField] float acceleration = 10f; // rate at which the player runs
     [SerializeField] float maxSpeed = 5f; // cap the maximum speed
     [SerializeField] float deceleration = 8f; //rate at which player is slowing down
+
+    public bool IsMoving => playerAnimator.GetBool("Running") || playerAnimator.GetBool("Stopping");
+
+    public void KillPlayer()
+    {
+       if (PlayerIsDead()) return;
+       audioSource.Play();
+       playerAnimator.SetBool("Die", true);
+    }
+
+    public bool PlayerIsDead()
+    {
+        return playerAnimator.GetBool("Die");
+    }
+
 
     private void Awake()
     {
         characterController = GetComponent<Rigidbody>();
         playerAnimator = GetComponent<Animator>();
+        audioSource = transform.Find("GunShot").GetComponent<AudioSource>();   
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
 
     }
 
     void PlayerMovement()
     {
-        if (currentMovement != Vector3.zero)
+        if (currentMovement != Vector3.zero && !PlayerIsDead())
         {
             characterController.AddForce(currentMovement.normalized * acceleration, ForceMode.Acceleration);
         }
@@ -59,6 +79,7 @@ public class Player : MonoBehaviour
 
     public void OnMove(InputValue value) // receives message from player input
     {
+        if (PlayerIsDead()) return;
         currentMovementInput = value.Get<Vector2>();
         if (currentMovementInput != Vector2.zero)
         {

@@ -57,6 +57,7 @@ public class Girl : MonoBehaviour
 
             if (!isPlaying) // if girl tune is not playing yet
             {
+                Debug.Log("Starting girl singing sound...");
                 // Calculate current sound duration interpolated between initial and final duration
                 float currentSoundDuration = Mathf.Lerp(initialSoundDuration, finalSoundDuration, elapsedTime / totalTime);
 
@@ -94,6 +95,7 @@ public class Girl : MonoBehaviour
     void StopSound()
     {
         girlSingingAudioSource.Stop();
+        RotateHead();
 
         // Ensure the next play happens after the break time
         Invoke(nameof(ResumePlayback), breakTime);
@@ -103,6 +105,32 @@ public class Girl : MonoBehaviour
     {
         isPlaying = false;
         scanning = false;
+        RotateHead(true);   
+    }
+
+    void RotateHead(bool rotateBack = false)
+    {
+        if (rotationCoroutine != null)
+        {
+            StopCoroutine(rotationCoroutine);
+        }
+        rotationCoroutine = StartCoroutine(RotateHeadOverTime(0.2f, rotateBack));
+    }
+
+    IEnumerator RotateHeadOverTime(float seconds, bool rotateBack = false)
+    {
+        float elapsedTime = 0;
+        Quaternion startRotation = head.rotation;
+        Quaternion endRotation = Quaternion.Euler(0, rotateBack ? 0 : 180, 0);
+        while (elapsedTime < seconds)
+        {
+            head.rotation = Quaternion.Slerp(startRotation, endRotation, elapsedTime / seconds);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        head.rotation = endRotation; // ensure final position
+        rotationAudioSource.Play();  // Play sound here, after rotation ends
+        scanning = !rotateBack;
     }
 
 
